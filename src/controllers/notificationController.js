@@ -32,4 +32,4 @@ const sendNotification = async (req, res) => {
     }
 };
 
-module.exports = { sendNotifiacation };
+module.exports = { sendNotification };
