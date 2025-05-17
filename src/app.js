@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 const connectDB = require("./config/db");
 connectDB();
+const notificationRoutes = require("./routes/notificationRoutes");
 
 app.use(express.json());
 
