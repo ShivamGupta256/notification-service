@@ -1,13 +1,13 @@
-// src/workers/notificationWorker.js
+const dotenv = require('dotenv');
+dotenv.config();
 const amqp = require('amqplib');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
 const Notification = require('../models/Notification');
 const sendEmail = require('../services/emailService');
 const sendSMS = require('../services/smsService');
 const sendInApp = require('../services/inAppService');
 
-dotenv.config();
+
 
 const queue = 'notifications';
 
@@ -23,34 +23,40 @@ const startWorker = async () => {
     console.log('Worker connected to RabbitMQ');
 
     channel.consume(queue, async (msg) => {
-      const { notificationId } = JSON.parse(msg.content.toString());
-      console.log(`Processing notification ID: ${notificationId}`);
+  const { notificationId } = JSON.parse(msg.content.toString());
+  console.log(`Processing notification ID: ${notificationId}`);
 
-      try {
-        const notification = await Notification.findById(notificationId);
-        if (!notification) throw new Error('Notification not found');
+  let notification;
 
-        if (notification.type === 'email') {
-          await sendEmail(notification);
-        } else if (notification.type === 'sms') {
-          await sendSMS(notification);
-        } else if (notification.type === 'in-app') {
-          await sendInApp(notification);
-        }
+  try {
+    notification = await Notification.findById(notificationId);
+    if (!notification) throw new Error('Notification not found');
 
-        notification.status = 'sent';
-        await notification.save();
-        console.log(`Notification ${notification._id} sent`);
+    if (notification.type === 'email') {
+      await sendEmail(notification);
+    } else if (notification.type === 'sms') {
+      await sendSMS(notification);
+    } else if (notification.type === 'in-app') {
+      await sendInApp(notification);
+    }
 
-        channel.ack(msg);
-      } catch (err) {
-        console.error(`Failed to process notification ${notificationId}:`, err.message);
-        notification.status = 'failed';
-        await notification.save();
-        channel.ack(msg);
-      }
+    notification.status = 'sent';
+    await notification.save();
+    console.log(`Notification ${notification._id} sent`);
+    channel.ack(msg);
 
-    }, { noAck: false });
+  } catch (err) {
+    console.error(`Failed to process notification ${notificationId}:`, err.message);
+
+    if (notification) {
+      notification.status = 'failed';
+      await notification.save();
+    }
+
+    channel.ack(msg);
+  }
+});
+
 
   } catch (error) {
     console.error('Worker failed to start:', error.message);
