@@ -19,7 +19,7 @@ const pushToQueue = async (queueName, message) => {
     try {
         if(!channel)
             throw new Error("No channel connected yet");
-        await channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)), {
+        await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
             persistent: true
         });
     }

@@ -9,6 +9,9 @@ const { connectQueue } = require("./queues/notificationQueue");
 
 app.use(express.json());
 
+app.use('/api', notificationRoutes);
+
+
 app.get("/", (req,res) => {
     res.send("Notification service API is running");
 });

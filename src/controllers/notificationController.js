@@ -1,35 +1,40 @@
-const Notification = require("../models/Notification");
-const { pushToQueue } = require("../queues/notificationQueue");
+const Notification = require('../models/Notification');
+const { pushToQueue } = require('../queues/notificationQueue');
 
 const sendNotification = async (req, res) => {
-    try {
-        const notification = req.body.notifications;
-        const savedNotification = [];
+  try {
+    const notifications = req.body.notifications;
 
-        for(const note of notification) {
-            const notification = new Notification({
-                userId: req.body.userId,
-                type: note.type,
-                to: note.to,
-                subject: note.subject,
-                message,
-                status: "pending"
-            });
+    // ✅ Declare it before the loop
+    const savedNotifications = [];
 
-            const saved = await notification.save();
-            savedNotifications.push(saved);
+    for (const note of notifications) {
+      const notification = new Notification({
+        userId: req.body.userId,
+        type: note.type,
+        to: note.to,
+        subject: note.subject,
+        message: note.message,
+        status: 'pending',
+      });
 
-            await pushToQueue("notifications", {
-                notificationId: saved._id,
-            });
-        }
+      const saved = await notification.save();
+      savedNotifications.push(saved);
 
-        res.status(201).json({message: "Notifications queued", savedNotifications});
+      await pushToQueue('notifications', {
+        notificationId: saved._id,
+      });
     }
-    catch(error) {
-        console.error("Error sending notification: ",error.message);
-        res.status(500).json({error: "Internal Server Error"});
-    }
+
+    res.status(201).json({
+      message: 'Notifications queued',
+      savedNotifications, // ✅ Now accessible
+    });
+
+  } catch (error) {
+    console.error('Error sending notification:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 };
 
 module.exports = { sendNotification };
