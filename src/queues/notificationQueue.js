@@ -15,17 +15,34 @@ const connectQueue = async () => {
     }
 };
 
-const pushToQueue = async (queueName, message) => {
-    try {
-        if(!channel)
-            throw new Error("No channel connected yet");
-        await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
-            persistent: true
-        });
+const pushToQueue = async (queueName, message, delayMs = 0) => {
+  try {
+    if (!channel) throw new Error('No channel connected yet');
+
+    const buffer = Buffer.from(JSON.stringify(message));
+
+    if (delayMs > 0) {
+      const delayedQueue = `${queueName}_delayed`;
+      await channel.assertQueue(delayedQueue, {
+        durable: true,
+        arguments: {
+          'x-dead-letter-exchange': '',
+          'x-dead-letter-routing-key': queueName,
+          'x-message-ttl': delayMs,
+        },
+      });
+
+      await channel.sendToQueue(delayedQueue, buffer, {
+        persistent: true,
+      });
+    } else {
+      await channel.sendToQueue(queueName, buffer, {
+        persistent: true,
+      });
     }
-    catch(error) {
-        console.error("Failed to push message: ",error.message);
-    }
+  } catch (error) {
+    console.error('Failed to push message:', error.message);
+  }
 };
 
 module.exports = { connectQueue, pushToQueue };

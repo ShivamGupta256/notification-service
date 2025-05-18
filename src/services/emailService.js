@@ -9,6 +9,9 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmail = async (notification) => {
+
+  //throw new Error('Simulated failure');  // This line is only for testing the retry feature.
+  
   const mailOptions = {
     from: `"Notification Service" <${process.env.EMAIL_USER}>`,
     to: notification.to,

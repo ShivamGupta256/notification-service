@@ -6,7 +6,7 @@ const Notification = require('../models/Notification');
 const sendEmail = require('../services/emailService');
 const sendSMS = require('../services/smsService');
 const sendInApp = require('../services/inAppService');
-
+const { pushToQueue, connectQueue } = require('../queues/notificationQueue');
 
 
 const queue = 'notifications';
@@ -22,9 +22,13 @@ const startWorker = async () => {
     await channel.assertQueue(queue, { durable: true });
     console.log('Worker connected to RabbitMQ');
 
+    await connectQueue();
+
     channel.consume(queue, async (msg) => {
-  const { notificationId } = JSON.parse(msg.content.toString());
-  console.log(`Processing notification ID: ${notificationId}`);
+  const data = JSON.parse(msg.content.toString());
+  const { notificationId, retryCount = 0 } = data;
+
+  console.log(`Processing notification ID: ${notificationId}, Retry: ${retryCount}`);
 
   let notification;
 
@@ -43,20 +47,29 @@ const startWorker = async () => {
     notification.status = 'sent';
     await notification.save();
     console.log(`Notification ${notification._id} sent`);
+
     channel.ack(msg);
 
   } catch (err) {
-    console.error(`Failed to process notification ${notificationId}:`, err.message);
+    console.error(`Failed to process ${notificationId}: ${err.message}`);
 
-    if (notification) {
-      notification.status = 'failed';
-      await notification.save();
+    if (retryCount < 3) {
+      const newRetryCount = retryCount + 1;
+      console.log(`Retrying (attempt ${newRetryCount}/3)...`);
+
+      await pushToQueue(queue, { notificationId, retryCount: newRetryCount }, 5000);
+
+    } else {
+      console.log(`Final failure. Giving up on notification ${notificationId}`);
+      if (notification) {
+        notification.status = 'failed';
+        await notification.save();
+      }
     }
 
     channel.ack(msg);
   }
 });
-
 
   } catch (error) {
     console.error('Worker failed to start:', error.message);

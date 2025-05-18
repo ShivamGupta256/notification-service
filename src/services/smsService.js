@@ -14,6 +14,9 @@ const client = twilio(
 );
 
 const sendSMS = async (notification) => {
+
+  //throw new Error('Simulated failure');  // This line is only for testing the retry feature.
+
   await client.messages.create({
     body: notification.message,
     from: process.env.TWILIO_PHONE,
