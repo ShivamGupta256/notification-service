@@ -9,7 +9,7 @@ const { connectQueue } = require("./queues/notificationQueue");
 
 app.use(express.json());
 
-app.use('/api', notificationRoutes);
+app.use(notificationRoutes);
 
 
 app.get("/", (req,res) => {
