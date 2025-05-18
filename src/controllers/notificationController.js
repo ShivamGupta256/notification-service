@@ -30,7 +30,8 @@ const sendNotification = async (req, res) => {
       savedNotifications,
     });
 
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Error sending notification:', error.message);
     res.status(500).json({ error: 'Internal Server Error' });
   }
@@ -55,7 +56,8 @@ const getUserNotifications = async (req, res) => {
       count: notifications.length,
       notifications,
     });
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Error fetching notifications:', error.message);
     res.status(500).json({ error: 'Internal Server Error' });
   }

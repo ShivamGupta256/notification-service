@@ -1,18 +1,18 @@
-const ampq = require("amqplib");
-const queueName = "notifications";
+const ampq = require('amqplib');
+const queueName = 'notifications';
 
 let channel;
 
 const connectQueue = async () => {
-    try {
-        const connection = await ampq.connect(process.env.RABBITMQ_URL);
-        channel = await connection.createChannel();
-        await channel.assertQueue(queueName, { durable: true });
-        console.log("Connected to RabbitMQ & queue ready");
-    }
-    catch(error) {
-        console.log("Failed toconnect to RabbitMQ: ",error.message);
-    }
+  try {
+    const connection = await ampq.connect(process.env.RABBITMQ_URL);
+    channel = await connection.createChannel();
+    await channel.assertQueue(queueName, { durable: true });
+    console.log('Connected to RabbitMQ & queue ready');
+  }
+  catch(error) {
+    console.log('Failed toconnect to RabbitMQ: ',error.message);
+  }
 };
 
 const pushToQueue = async (queueName, message, delayMs = 0) => {
@@ -35,12 +35,14 @@ const pushToQueue = async (queueName, message, delayMs = 0) => {
       await channel.sendToQueue(delayedQueue, buffer, {
         persistent: true,
       });
-    } else {
+    } 
+    else {
       await channel.sendToQueue(queueName, buffer, {
         persistent: true,
       });
     }
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Failed to push message:', error.message);
   }
 };

@@ -25,62 +25,67 @@ const startWorker = async () => {
     await connectQueue();
 
     channel.consume(queue, async (msg) => {
-  const data = JSON.parse(msg.content.toString());
-  const { notificationId, retryCount = 0 } = data;
+      const data = JSON.parse(msg.content.toString());
+      const { notificationId, retryCount = 0 } = data;
 
-  console.log(`Processing notification ID: ${notificationId}, Retry: ${retryCount}`);
+      console.log(`Processing notification ID: ${notificationId}, Retry: ${retryCount}`);
 
-  let notification;
+      let notification;
 
-  try {
-    notification = await Notification.findById(notificationId);
-    if (!notification) throw new Error('Notification not found');
+      try {
+        notification = await Notification.findById(notificationId);
+        if (!notification) throw new Error('Notification not found');
 
-    let result;
+        let result;
 
-    if (notification.type === 'email') {
-      await sendEmail(notification);
-    } else if (notification.type === 'sms') {
-      result = await sendSMS(notification);
-      if (result?.skipped) {
-      notification.status = 'skipped';
-      await notification.save();
-      console.warn(`Notification ${notification._id} skipped (SMS limit or unverified)`);
-      channel.ack(msg);
-      return;
-    }
-    } else if (notification.type === 'in-app') {
-      await sendInApp(notification);
-    }
+        if (notification.type === 'email') {
+          await sendEmail(notification);
+        } 
+        else if (notification.type === 'sms') {
+          result = await sendSMS(notification);
+          if (result?.skipped) {
+            notification.status = 'skipped';
+            await notification.save();
+            console.warn(`Notification ${notification._id} skipped (SMS limit or unverified)`);
+            channel.ack(msg);
+            return;
+          }
+        } 
+        else if (notification.type === 'in-app') {
+          await sendInApp(notification);
+        }
 
-    notification.status = 'sent';
-    await notification.save();
-    console.log(`Notification ${notification._id} sent`);
-
-    channel.ack(msg);
-
-  } catch (err) {
-    console.error(`Failed to process ${notificationId}: ${err.message}`);
-
-    if (retryCount < 3) {
-      const newRetryCount = retryCount + 1;
-      console.log(`Retrying (attempt ${newRetryCount}/3)...`);
-
-      await pushToQueue(queue, { notificationId, retryCount: newRetryCount }, 5000);
-
-    } else {
-      console.log(`Final failure. Giving up on notification ${notificationId}`);
-      if (notification) {
-        notification.status = 'failed';
+        notification.status = 'sent';
         await notification.save();
+        console.log(`Notification ${notification._id} sent`);
+
+        channel.ack(msg);
+
+      } 
+      catch (err) {
+        console.error(`Failed to process ${notificationId}: ${err.message}`);
+
+        if (retryCount < 3) {
+          const newRetryCount = retryCount + 1;
+          console.log(`Retrying (attempt ${newRetryCount}/3)...`);
+
+          await pushToQueue(queue, { notificationId, retryCount: newRetryCount }, 5000);
+
+        } 
+        else {
+          console.log(`Final failure. Giving up on notification ${notificationId}`);
+          if (notification) {
+            notification.status = 'failed';
+            await notification.save();
+          }
+        }
+
+        channel.ack(msg);
       }
-    }
+    });
 
-    channel.ack(msg);
-  }
-});
-
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Worker failed to start:', error.message);
   }
 };
