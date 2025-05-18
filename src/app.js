@@ -18,6 +18,11 @@ app.get('/', (req,res) => {
 
 connectQueue();
 
+app.get('/healthz', (req, res) => {
+  res.status(200).send('OK');
+});
+
+
 const PORT = process.env.PORT || 5000
 app.listen(PORT, ()=> {
     console.log(`server live on port ${PORT}`);
