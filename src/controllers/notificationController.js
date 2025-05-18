@@ -5,7 +5,6 @@ const sendNotification = async (req, res) => {
   try {
     const notifications = req.body.notifications;
 
-    // ✅ Declare it before the loop
     const savedNotifications = [];
 
     for (const note of notifications) {
@@ -28,7 +27,7 @@ const sendNotification = async (req, res) => {
 
     res.status(201).json({
       message: 'Notifications queued',
-      savedNotifications, // ✅ Now accessible
+      savedNotifications,
     });
 
   } catch (error) {
@@ -37,4 +36,21 @@ const sendNotification = async (req, res) => {
   }
 };
 
-module.exports = { sendNotification };
+
+const getUserNotifications = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      count: notifications.length,
+      notifications,
+    });
+  } catch (error) {
+    console.error('Error fetching notifications:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+module.exports = { sendNotification, getUserNotifications };
