@@ -40,7 +40,16 @@ const sendNotification = async (req, res) => {
 const getUserNotifications = async (req, res) => {
   try {
     const userId = req.params.id;
-    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+    const type = req.query.type;
+
+    const filter = { userId };
+    if (type && ['email', 'sms', 'in-app'].includes(type)) {
+      filter.type = type;
+    }
+
+    console.log('Filter being applied:', filter);
+
+    const notifications = await Notification.find(filter).sort({ createdAt: -1 });
 
     res.status(200).json({
       count: notifications.length,
@@ -51,6 +60,7 @@ const getUserNotifications = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
 
 
 module.exports = { sendNotification, getUserNotifications };
