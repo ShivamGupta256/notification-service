@@ -1,5 +1,6 @@
 const sendSMS = async (notification) => {
-  console.log(`[Mock] Sending SMS to ${notification.to}: ${notification.message}`);
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  console.log(`[Mock] SMS sent to ${notification.to}: ${notification.message}`);
 };
 
 module.exports = sendSMS;
