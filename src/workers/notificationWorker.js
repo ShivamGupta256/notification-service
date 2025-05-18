@@ -36,10 +36,19 @@ const startWorker = async () => {
     notification = await Notification.findById(notificationId);
     if (!notification) throw new Error('Notification not found');
 
+    let result;
+
     if (notification.type === 'email') {
       await sendEmail(notification);
     } else if (notification.type === 'sms') {
-      await sendSMS(notification);
+      result = await sendSMS(notification);
+      if (result?.skipped) {
+      notification.status = 'skipped';
+      await notification.save();
+      console.warn(`Notification ${notification._id} skipped (SMS limit or unverified)`);
+      channel.ack(msg);
+      return;
+    }
     } else if (notification.type === 'in-app') {
       await sendInApp(notification);
     }
