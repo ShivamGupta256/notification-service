@@ -1,0 +1,59 @@
+
+{
+    "info": {
+        "name": "Notification Service",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Queue Notifications",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "url": {
+                    "raw": "https://notification-service-by-shivam.onrender.com/notifications",
+                    "protocol": "https",
+                    "host": ["notification-service-by-shivam","onrender","com"],
+                    "path": ["notifications"]
+                },
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"userId\": \"user123\",\n    \"notifications\": [\n        {\n            \"type\": \"email\",\n            \"to\": \"test@example.com\",\n            \"subject\": \"Welcome!\",\n            \"message\": \"Thanks for signing up!\"\n        },\n        {\n            \"type\": \"sms\",\n            \"to\": \"+919000000000\",\n            \"message\": \"Your account has been created.\"\n        },\n        {\n            \"type\": \"in-app\",\n            \"message\": \"Welcome to our platform!\"\n        }\n    ]\n}"
+                }
+            }
+        },
+        {
+            "name": "Get User Notifications",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "https://notification-service-by-shivam.onrender.com/users/user123/notifications?type=email&status=sent",
+                    "protocol": "https",
+                    "host": ["notification-service-by-shivam","onrender","com"],
+                    "path": ["users","user123","notifications"],
+                    "query": [
+                        {"key": "type", "value": "email"},
+                        {"key": "status", "value": "sent"}
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Health Check",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "https://notification-service-by-shivam.onrender.com/healthz",
+                    "protocol": "https",
+                    "host": ["notification-service-by-shivam","onrender","com"],
+                    "path": ["healthz"]
+                }
+            }
+        }
+    ]
+}
