@@ -347,7 +347,7 @@ Processing notification ID: ...
 * You can currently POST any type of messages on the live URL and it will give you a response but I was unable to deploy the Worker live as Render does not allow *Background Worker* deployment on its free tier account.
 * I will try my best to keep the worker running locally but, just in-case there is a failure on my side you can still test the in-App type messages and more but when you GET requset to check a users notifiactions their status would be pending.
 * You can successfully GET for userid: user123 to check the samples that I have tested in the database.
-* You can also receive emails from my email(as the live server is connected with my credentials) and SMS from the Twilio Number.
+* You can also receive emails from my email(as the live server is connected with my credentials) and SMS from the Twilio Number but it only sends messages to verified numbers so it will fail after retrying 3 times for a ranmdom number.
 * Thank you for considering.
 
 ---
